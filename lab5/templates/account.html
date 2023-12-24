@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <form action="" method="post">
+        {% if data %}
+            <p>Hello, {{data}}! </p>
+        {% endif %}
+        {% if error==1 %}
+            <p>User not found</p>
+        {% endif %}
+        {% if error==2 %}
+            <p>Username or password is empty</p>
+        {% endif %}
+        {% if error==3 %}
+            <p>Full name, password or login is empty</p>
+        {% endif %}
+        {% if error==4 %}
+            <p>User with the same login already exists</p>
+        {% endif %}
+    </form>
+</head>
+<body>
+</body>
+</html>

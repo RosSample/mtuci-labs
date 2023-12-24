@@ -1,0 +1,14 @@
+CREATE DATABASE service_db;
+\c service_db
+CREATE SCHEMA service;
+CREATE TABLE service.users (id SERIAL NOT NULL, full_name VARCHAR NOT NULL, login VARCHAR NOT NULL, password VARCHAR NOT NULL);
+INSERT INTO service.users (full_name, login, password) VALUES ('Ivanilov Rostislav', 'ros51', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John Madden', 'football', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John Mazda', 'car', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John Grey', 'toolbox', '12344321'); 
+INSERT INTO service.users (full_name, login, password) VALUES ('John John', 'John', '12344321'); 
+INSERT INTO service.users (full_name, login, password) VALUES ('Tahm Kench', 'gamba', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('Jericho Swain', 'noxus', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John Flask', 'flask', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John Python', 'py', '12344321');
+INSERT INTO service.users (full_name, login, password) VALUES ('John VSCode', 'vsc', '12344321');
