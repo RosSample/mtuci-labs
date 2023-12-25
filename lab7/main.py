@@ -18,18 +18,35 @@ week_number = datetime.today().isocalendar()[1] % 2
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-    butn1 = types.KeyboardButton("Расписание на текущую неделю")
-    butn2 = types.KeyboardButton("Расписание на следующую неделю")
-    butn3 = types.KeyboardButton("Понедельник")
-    butn4 = types.KeyboardButton("Вторник")
-    butn5 = types.KeyboardButton("Среда")
-    butn6 = types.KeyboardButton("Четверг")
-    butn7 = types.KeyboardButton("Пятница")
-    butn8 = types.KeyboardButton("Суббота")
-
+    keyboard = types.ReplyKeyboardMarkup()
+    keyboard.row("Расписание на текущую неделю", "Расписание на следующую неделю")
+    keyboard.row("Понедельник", "Вторник", "Среда")
+    keyboard.row("Четверг", "Пятница", "Суббота")
     bot.send_message(message.chat.id, "Привет, {name}, Данный бот был создан для того, чтобы показать расписание МТУСИ."
-                                      "\nВы можете ознакомится с возможностями данного бота, используя команду /help".format(name=message.from_user.first_name, reply_markup=keyboard))
+                                    "\nВы можете ознакомится с возможностями данного бота, используя команду /help.".format(name=message.from_user.first_name), reply_markup=keyboard)
+
+
+@bot.message_handler(commands=['help'])
+def weekNumber(message):
+    bot.send_message(message.chat.id, "Описание доступных команд:"
+                                      "\n/help - Узнать команды бота"
+                                      "\n/week - Узнать какая сейчас неделя (четная/нечетная)"
+                                      "\n/date - Узнать какая сейчас дата"
+                                      "\n/thefog - Он идет"
+                                      "\n/mtuci - Официальный сайт вуза"
+                                      "\n<Расписание на текущую неделю> - Узнать расписание на эту неделю"
+                                      "\n<Расписание на следующую неделю> - Узнать расписание на следующую неделю"
+                                      "\n<Понедельник - Суббота> - Узнать расписание на определенный день")
+
+
+@bot.message_handler(commands=['date'])
+def date(message):
+    bot.send_message(message.chat.id,"Дата " + datetime.now().strftime("%y.%m.%d %H:%M:%S"))
+
+
+@bot.message_handler(commands=['mtuci'])
+def mtuci(message):
+    bot.send_message(message.chat.id, "Официальный сайт вуза - https://mtuci.ru/")
 
 
 @bot.message_handler(commands=['week'])
@@ -40,21 +57,9 @@ def weekNumber(message):
         bot.send_message(message.chat.id, "Сейчас четная неделя")
 
 
-@bot.message_handler(commands=['help'])
-def weekNumber(message):
-    bot.send_message(message.chat.id, "Описание доступных команд:"
-                                      "\n/help - Узнать команды бота"
-                                      "\n/week - Узнать какая сейчас неделя (четная/нечетная)"
-                                      "\n/date - Узнать какая сейчас дата"
-                                      "\n/the fog - Он идет"
-                                      "\n<Расписание на текущую неделю> -Узнать расписание на эту неделю"
-                                      "\n<Расписание на следующую неделю> - Узнать расписание на будущую неделю"
-                                      "\n<Понедельник - Суббота>  - Узнать расписание на определенный день")
-
-
-@bot.message_handler(commands=['date'])
-def date(message):
-    bot.send_message(message.chat.id,"Дата    " + datetime.now().strftime("%y.%m.%d %H:%M:%S"))
+@bot.message_handler(commands=['thefog'])
+def cat(message):
+    bot.send_video(message.chat.id, 'https://media.tenor.com/gbQyDmWmNEAAAAAC/maxwell.gif')
 
 
 @bot.message_handler(content_types='text')
@@ -68,7 +73,12 @@ def reply(message):
         text = f"{message.text}:\n"
         text += '____________________________________________________________\n'
         for i in records:
-            text += f"Предмет: {i[2]}; Кабинет: {i[3]}; Время: {i[4]} Преподаватель: {i[5]}\n"
+            text += f"Предмет: {i[2]}; Кабинет: {i[3]}; Время: {i[4]}"
+        # Преподаватель: {}
+        cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
+        subject = cursor.fetchone()[0]
+        cursor.execute(f"SELECT full_name FROM teacher where subject = '{subject}'")
+        text += f"Преподаватель: {teacher}\n"
         text += "____________________________________________________________"
         bot.send_message(message.chat.id, text)
     elif 'текущую' in message.text.lower():
@@ -79,12 +89,19 @@ def reply(message):
             else:
                 cursor.execute(f"SELECT * FROM timetable where day = '{i} 2' or day = '{i} 0' order by start_time")
             records = list(cursor.fetchall())
+            bot.send_message(message.chat.id, records)
             text += f'{i.title()}:\n'
             text += '____________________________________________________________\n'
             if not records:
                 text += "Выходной\n"
-            for j in records:
-                text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]} Преподаватель: {j[5]} \n"
+            else:
+                for j in records:
+                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]}"
+                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
+                subject = cursor.fetchone()[0]
+                cursor.execute(f"SELECT full_name FROM teacher where subject = '{subject}'")
+                teacher = cursor.fetchone()[0]
+                text += f"Преподаватель: {teacher}\n"
             text += "____________________________________________________________"
             text += '\n\n'
         bot.send_message(message.chat.id, text)
@@ -100,18 +117,18 @@ def reply(message):
             text += '____________________________________________________________\n'
             if not records:
                 text += "Выходной\n"
-            for j in records:
-                text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]} Преподаватель: {j[5]} \n"
+            else:
+                for j in records:
+                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]}"
+                bot.send_message(message.chat.id, records)
+                cursor.execute(f"SELECT full_name FROM teacher where subject = {records[1]}")
+                teacher = cursor.fetchall()
+                text += f"Преподаватель: {teacher}\n"
             text += "____________________________________________________________"
             text += '\n\n'
         bot.send_message(message.chat.id, text)
     else:
         bot.send_message(message.chat.id, "Извините, я Вас не понял")
-
-
-@bot.message_handler(commands=['thefog'])
-def cat(message):
-    bot.send_video(message.chat.id, 'https://media.tenor.com/gbQyDmWmNEAAAAAC/maxwell.gif')
 
 
 bot.infinity_polling()

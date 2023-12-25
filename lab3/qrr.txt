@@ -1,0 +1,5 @@
+CREATE TABLE kafedra(id SERIAl PRIMARY KEY, kafedra_name varchar NOT NULL UNIQUE, dekanat varchar NOT NULL);
+CREATE TABLE student_group(id SERIAL PRIMARY KEY, group_name varchar NOT NULL UNIQUE, kafedra_name varchar NOT NULL REFERENCES kafedra(kafedra_name));
+CREATE TABLE student(id SERIAL PRIMARY KEY, student_name varchar NOT NULL, passport varchar(10) NOT NULL, group_name varchar NOT NULL REFERENCES student_group(group_name));
+INSERT INTO kafedra (kafedra_name, dekanat) VALUES ('НТС', 'СиСС');
+INSERT INTO kafedra (kafedra_name, dekanat) VALUES ('МТС', 'СиСС');
