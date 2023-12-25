@@ -10,7 +10,7 @@ conn = psycopg2.connect(database="bot_db",
                         port="5432")
 cursor = conn.cursor()
 
-token = "6523145927:AAH6K47WRXlDHwhqa7ZK4D7VimBugsCzn5I"
+token = "6663291550:AAGbOE7-em8S5Kgrtze0pN_kLL6e_iBOWk8"
 bot = telebot.TeleBot(token)
 
 days_list = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота"]
@@ -69,17 +69,32 @@ def reply(message):
             cursor.execute(f"SELECT * FROM timetable where day = '{message.text.lower()} 1' or day = '{message.text.lower()} 0' order by start_time")
         else:
             cursor.execute(f"SELECT * FROM timetable where day = '{message.text.lower()} 2' or day = '{message.text.lower()} 0' order by start_time")
-        records = list(cursor.fetchall())
+        records = cursor.fetchall()
         text = f"{message.text}:\n"
-        text += '____________________________________________________________\n'
-        for i in records:
-            text += f"Предмет: {i[2]}; Кабинет: {i[3]}; Время: {i[4]}"
-        # Преподаватель: {}
-        cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
-        subject = cursor.fetchone()[0]
-        cursor.execute(f"SELECT full_name FROM teacher where subject = '{subject}'")
-        text += f"Преподаватель: {teacher}\n"
-        text += "____________________________________________________________"
+        text += '_____\n'
+        if week_number == 1:
+            cursor.execute(f"SELECT subject FROM timetable where day = '{message.text.lower()} 1' or day = '{message.text.lower()} 0' order by start_time")
+        else:
+            cursor.execute(f"SELECT subject FROM timetable where day = '{message.text.lower()} 2' or day = '{message.text.lower()} 0' order by start_time")
+        subjects = cursor.fetchall()
+        teachers = []
+        for j in range(len(subjects)):
+            print(type(subjects[j][0]), subjects[j][0])
+            cursor.execute(f"SELECT full_name FROM teacher where subject = '{subjects[j][0]}'")
+            try:
+                teachers.append(cursor.fetchone()[0])
+            except:
+                teachers.append('?')
+        print(teachers)
+        k = 0
+        if not records:
+            text += "Выходной\n"
+        else:
+            for j in records:
+                text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]} Преподаватель: {teachers[k]}\n"
+                k += 1
+        k = 0
+        text += "_____"
         bot.send_message(message.chat.id, text)
     elif 'текущую' in message.text.lower():
         text = ""
@@ -88,21 +103,32 @@ def reply(message):
                 cursor.execute(f"SELECT * FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
             else:
                 cursor.execute(f"SELECT * FROM timetable where day = '{i} 2' or day = '{i} 0' order by start_time")
-            records = list(cursor.fetchall())
-            bot.send_message(message.chat.id, records)
+            records = cursor.fetchall()
             text += f'{i.title()}:\n'
-            text += '____________________________________________________________\n'
+            text += '_____\n'
+            if week_number == 1:
+                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
+            else:
+                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 2' or day = '{i} 0' order by start_time")
+            subjects = cursor.fetchall()
+            teachers = []
+            for j in range(len(subjects)):
+                print(type(subjects[j][0]), subjects[j][0])
+                cursor.execute(f"SELECT full_name FROM teacher where subject = '{subjects[j][0]}'")
+                try:
+                    teachers.append(cursor.fetchone()[0])
+                except:
+                    teachers.append('?')
+            print(teachers)
             if not records:
                 text += "Выходной\n"
             else:
+                k = 0
                 for j in records:
-                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]}"
-                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
-                subject = cursor.fetchone()[0]
-                cursor.execute(f"SELECT full_name FROM teacher where subject = '{subject}'")
-                teacher = cursor.fetchone()[0]
-                text += f"Преподаватель: {teacher}\n"
-            text += "____________________________________________________________"
+                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]} Преподаватель: {teachers[k]}\n"
+                    k += 1
+            k = 0
+            text += "_____"
             text += '\n\n'
         bot.send_message(message.chat.id, text)
     elif 'следующую' in message.text.lower():
@@ -112,19 +138,32 @@ def reply(message):
                 cursor.execute(f"SELECT * FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
             else:
                 cursor.execute(f"SELECT * FROM timetable where day = '{i} 2' or day = '{i} 0' order by start_time")
-            records = list(cursor.fetchall())
+            records = cursor.fetchall()
             text += f'{i.title()}:\n'
-            text += '____________________________________________________________\n'
+            text += '_____\n'
+            if week_number + 1 == 1:
+                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 1' or day = '{i} 0' order by start_time")
+            else:
+                cursor.execute(f"SELECT subject FROM timetable where day = '{i} 2' or day = '{i} 0' order by start_time")
+            subjects = cursor.fetchall()
+            teachers = []
+            for j in range(len(subjects)):
+                print(type(subjects[j][0]), subjects[j][0])
+                cursor.execute(f"SELECT full_name FROM teacher where subject = '{subjects[j][0]}'")
+                try:
+                    teachers.append(cursor.fetchone()[0])
+                except:
+                    teachers.append('?')
+            print(teachers)
             if not records:
                 text += "Выходной\n"
             else:
+                k = 0
                 for j in records:
-                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]}"
-                bot.send_message(message.chat.id, records)
-                cursor.execute(f"SELECT full_name FROM teacher where subject = {records[1]}")
-                teacher = cursor.fetchall()
-                text += f"Преподаватель: {teacher}\n"
-            text += "____________________________________________________________"
+                    text += f"Предмет: {j[2]} Кабинет: {j[3]} Время: {j[4]} Преподаватель: {teachers[k]}\n"
+                    k += 1
+            k = 0
+            text += "_____"
             text += '\n\n'
         bot.send_message(message.chat.id, text)
     else:
